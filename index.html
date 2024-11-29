@@ -5,6 +5,12 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>TIMEEEEE</title>
   <style>
+    body {
+      margin: 0; /* 기본 여백 제거 */
+      padding: 0; /* 기본 여백 제거 */
+      background-color: #000000; /* 배경색을 검은색으로 설정 */
+    }
+
     .clock {
       width: 450px;
       background-color: #ffffff;
@@ -32,12 +38,29 @@
       display: flex;
       justify-content: center;
       gap: 10px;
-      font-size: 1rem;
+      font-size: 2rem;
     }
 
-    .active {
-      color: #ff0000;
+    .days-of-week span {
+     color: #ffffff33; /* 기본 색상 */
     }
+
+    .days-of-week .active {
+     font-weight: bold; /* 활성화된 요일은 볼드 처리 */
+    }
+
+    .days-of-week .weekday {
+     color: #00ff00; /* 초록색 (월 ~ 금) */
+    }
+
+    .days-of-week .saturday {
+     color: #0000ff; /* 파란색 (토요일) */
+    }
+
+    .days-of-week .sunday {
+     color: #ff0000; /* 빨간색 (일요일) */
+    }
+
 
     .time {
       font-size: 3em;
@@ -66,7 +89,7 @@
 <body>
   <div class="time test">
     <div class="inside">
-      <div class="days-fo-week">
+      <div class="days-of-week">
         <span id="sun" class="active">SUN</span>
         <span id="mon">MON</span>
         <span id="tus">TUS</span>
@@ -94,46 +117,50 @@
 
   <script>
     const daysOfWeek = ['sun', 'mon', 'tus', 'wed', 'thu', 'fri', 'sat'];
-    const months = [
-      'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
-      'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
-    ];
+const months = [
+  'JAN', 'FEB', 'MAR', 'APR', 'MAY', 'JUN',
+  'JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC',
+];
 
-    const $ = (id) => document.getElementById(id);
-    const zeroPadding = (num) => String(num).padStart(2, '0');
+const $ = (id) => document.getElementById(id);
+const zeroPadding = (num) => String(num).padStart(2, '0');
 
-    function clock() {
-      const today = new Date();
-      const h = today.getHours();
-      const m = today.getMinutes();
-      const s = today.getSeconds();
-      const ampm = h < 12 ? 'AM' : 'PM';
-      const day = today.getDay();
-      const date = today.getDate();
-      const month = today.getMonth();
-      const year = today.getFullYear();
+function clock() {
+  const today = new Date();
+  const h = today.getHours();
+  const m = today.getMinutes();
+  const s = today.getSeconds();
+  const ampm = h < 12 ? 'AM' : 'PM';
+  const day = today.getDay();
+  const date = today.getDate();
+  const month = today.getMonth();
+  const year = today.getFullYear();
 
-      // 시간 업데이트
-      $('hours').innerHTML = zeroPadding(h % 12 || 12); // 12시간 형식
-      $('min').innerHTML = zeroPadding(m);
-      $('sec').innerHTML = zeroPadding(s);
-      $('ampm').innerHTML = ampm;
+  // 시간 업데이트
+  $('hours').innerHTML = zeroPadding(h % 12 || 12); // 12시간 형식
+  $('min').innerHTML = zeroPadding(m);
+  $('sec').innerHTML = zeroPadding(s);
+  $('ampm').innerHTML = ampm;
 
-      // 요일 업데이트
-      const activeDay = $(daysOfWeek[day]);
-      if (activeDay) {
-        document.querySelector('.days-fo-week .active')?.classList.remove('active');
-        activeDay.classList.add('active');
-      }
+  // 요일 업데이트
+  const activeDay = $(daysOfWeek[day]);
+  if (activeDay) {
+    document.querySelector('.days-of-week .active')?.classList.remove('active', 'weekday', 'saturday', 'sunday');
 
-      // 날짜 업데이트
-      $('year').innerHTML = year;
-      $('month').innerHTML = months[month];
-      $('day').innerHTML = zeroPadding(date);
-    }
+    // 요일별 색상 추가
+    if (day === 0) activeDay.classList.add('active', 'sunday'); // 일요일
+    else if (day === 6) activeDay.classList.add('active', 'saturday'); // 토요일
+    else activeDay.classList.add('active', 'weekday'); // 월~금요일
+  }
 
-    setInterval(clock, 1000);
-    clock(); // 초기화 실행
+  // 날짜 업데이트
+  $('year').innerHTML = year;
+  $('month').innerHTML = months[month];
+  $('day').innerHTML = zeroPadding(date);
+}
+
+setInterval(clock, 1000);
+clock(); // 초기화 실행
   </script>
 </body>
 </html>
