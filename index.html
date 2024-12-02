@@ -6,9 +6,18 @@
   <title>TIMEEEEE</title>
   <style>
     body {
-      margin: 0; /* 기본 여백 제거 */
-      padding: 0; /* 기본 여백 제거 */
-      background-color: #000000; /* 배경색을 검은색으로 설정 */
+      margin: 0;
+      padding: 0;
+      background-color: #000000; /* 배경색 */
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+      height: 100vh; /* 화면 높이를 100% 채움 */
+      display: flex; /* Flexbox 컨테이너 */
+      justify-content: center; /* 가로 중앙 정렬 */
+      align-items: center; /* 세로 중앙 정렬 */
+      overflow: hidden; /* 스크롤바 제거 */
+      cursor: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="32" height="32" viewport="0 0 100 100"><text y="20" font-size="20">🎄</text></svg>') 16 16, auto;
+    /* 🎄를 커서로 설정, 중앙 정렬 */
     }
 
     .clock {
@@ -21,6 +30,10 @@
       align-items: center;
       justify-content: center;
       padding: 30px;
+    }
+
+    .clock-container {
+      text-align: center; /* 텍스트 가운데 정렬 */
     }
 
     .inside {
@@ -60,7 +73,6 @@
      color: #ff0000; /* 빨간색 (일요일) */
     }
 
-
     .time {
       font-size: 3em;
       margin-top: 10px;
@@ -78,13 +90,24 @@
       margin-top: 35px;
       color: #ffffff;
     }
+
+    #snow-canvas {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: -1; /* 눈 배경을 뒤로 배치 */
+    }
   </style>
 </head>
 <body>
+  <!-- 눈 내리는 효과를 위한 캔버스 -->
+  <canvas id="snow-canvas"></canvas>
+
   <div class="time test">
     <div class="inside">
       GMT+9 [South Korea] (±5sec)
-      
       <div class="days-of-week">
         <span id="sun" class="active">SUN</span>
         <span id="mon">MON</span>
@@ -112,55 +135,105 @@
   </div>
 
   <script>
+    // 기존 시계 코드 유지
     const daysOfWeek = ['sun', 'mon', 'tus', 'wed', 'thu', 'fri', 'sat'];
-const months = [
-  '01.', '02.', '03.', '04.', '05.', '06.',
-  '07.', '08.', '09.', '10.', '11.', '12.',
-];
+    const months = [
+      '01.', '02.', '03.', '04.', '05.', '06.',
+      '07.', '08.', '09.', '10.', '11.', '12.',
+    ];
 
-const $ = (id) => document.getElementById(id);
-const zeroPadding = (num) => String(num).padStart(2, '0');
+    const $ = (id) => document.getElementById(id);
+    const zeroPadding = (num) => String(num).padStart(2, '0');
 
-function clock() {
-  const today = new Date();
-  const h = today.getHours();
-  const m = today.getMinutes();
-  const s = today.getSeconds();
-  const ampm = h < 12 ? 'AM' : 'PM';
-  const day = today.getDay();
-  const date = today.getDate();
-  const month = today.getMonth();
-  const year = today.getFullYear();
+    function clock() {
+      const today = new Date();
+      const h = today.getHours();
+      const m = today.getMinutes();
+      const s = today.getSeconds();
+      const ampm = h < 12 ? 'AM' : 'PM';
+      const day = today.getDay();
+      const date = today.getDate();
+      const month = today.getMonth();
+      const year = today.getFullYear();
 
-  // 시간 업데이트
-  $('hours').innerHTML = zeroPadding(h % 12 || 12); // 12시간 형식
-  $('min').innerHTML = zeroPadding(m);
-  $('sec').innerHTML = zeroPadding(s);
-  $('ampm').innerHTML = ampm;
+      // 시간 업데이트
+      $('hours').innerHTML = zeroPadding(h % 12 || 12); // 12시간 형식
+      $('min').innerHTML = zeroPadding(m);
+      $('sec').innerHTML = zeroPadding(s);
+      $('ampm').innerHTML = ampm;
 
-  // 요일 업데이트
-  const activeDay = $(daysOfWeek[day]);
-  if (activeDay) {
-    document.querySelector('.days-of-week .active')?.classList.remove('active', 'weekday', 'saturday', 'sunday');
+      // 요일 업데이트
+      const activeDay = $(daysOfWeek[day]);
+      if (activeDay) {
+        document.querySelector('.days-of-week .active')?.classList.remove('active', 'weekday', 'saturday', 'sunday');
 
-    // 요일별 색상 추가
-    if (day === 0) activeDay.classList.add('active', 'sunday'); // 일요일
-    else if (day === 6) activeDay.classList.add('active', 'saturday'); // 토요일
-    else activeDay.classList.add('active', 'weekday'); // 월~금요일
-  }
+        // 요일별 색상 추가
+        if (day === 0) activeDay.classList.add('active', 'sunday'); // 일요일
+        else if (day === 6) activeDay.classList.add('active', 'saturday'); // 토요일
+        else activeDay.classList.add('active', 'weekday'); // 월~금요일
+      }
 
-  // 날짜 업데이트
-  $('year').innerHTML = year;
-  $('month').innerHTML = months[month];
-  $('day').innerHTML = zeroPadding(date);
-}
+      // 날짜 업데이트
+      $('year').innerHTML = year;
+      $('month').innerHTML = months[month];
+      $('day').innerHTML = zeroPadding(date);
+    }
 
-setInterval(clock, 1000);
-clock(); // 초기화 실행
+    setInterval(clock, 1000);
+    clock(); // 초기화 실행
+
+    // 눈 내리는 효과 추가
+    const canvas = document.getElementById("snow-canvas");
+    const ctx = canvas.getContext("2d");
+    canvas.width = window.innerWidth;
+    canvas.height = window.innerHeight;
+
+    const snowflakes = [];
+    function createSnowflakes() {
+      for (let i = 0; i < 100; i++) {
+        snowflakes.push({
+          x: Math.random() * canvas.width,
+          y: Math.random() * canvas.height,
+          radius: Math.random() * 4 + 1,
+          speed: Math.random() * 2 + 1,
+        });
+      }
+    }
+
+    function drawSnowflakes() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "white";
+      ctx.beginPath();
+      snowflakes.forEach((flake) => {
+        ctx.moveTo(flake.x, flake.y);
+        ctx.arc(flake.x, flake.y, flake.radius, 0, Math.PI * 2, true);
+      });
+      ctx.fill();
+      moveSnowflakes();
+    }
+
+    function moveSnowflakes() {
+      snowflakes.forEach((flake) => {
+        flake.y += flake.speed;
+        if (flake.y > canvas.height) {
+          flake.y = 0;
+          flake.x = Math.random() * canvas.width;
+        }
+      });
+    }
+
+    function animateSnowfall() {
+      drawSnowflakes();
+      requestAnimationFrame(animateSnowfall);
+    }
+
+    createSnowflakes();
+    animateSnowfall();
+
+    window.addEventListener("resize", () => {
+      canvas.width = window.innerWidth;
+      canvas.height = window.innerHeight;
+    });
   </script>
 </body>
 </html>
-
-Thank you for [asmin_creates2]
-
-Some CSS and JS codes were helped by Chat gpt
